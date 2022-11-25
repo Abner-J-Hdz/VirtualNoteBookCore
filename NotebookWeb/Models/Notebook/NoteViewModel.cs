@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Text;
+using System.Linq;
+using System.Threading.Tasks;
 
-namespace NotebookEntities.NoteBookDB
+namespace NotebookWeb.Models.Notebook
 {
-    public class NBNotes
+    public class NoteViewModel
     {
         [Required]
         public int IdNote { get; set; }
@@ -20,5 +21,6 @@ namespace NotebookEntities.NoteBookDB
         public DateTime Created { get; set; }
 
         public DateTime Updated { get; set; }
+
     }
 }

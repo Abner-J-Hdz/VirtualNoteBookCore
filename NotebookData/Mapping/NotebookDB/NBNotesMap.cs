@@ -12,7 +12,7 @@ namespace NotebookData.Mapping.NotebookDB
         public void Configure(EntityTypeBuilder<NBNotes> builder)
         {
             builder.ToTable("NBNotes")
-                .HasKey(c => c.IdUser);
+                .HasKey(c => c.IdNote);
         }
     }
 }

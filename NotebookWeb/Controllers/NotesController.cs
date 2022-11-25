@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using NotebookData;
 using NotebookEntities.NoteBookDB;
+using NotebookWeb.Models.Notebook;
 
 namespace NotebookWeb.Controllers
 {
@@ -21,39 +22,62 @@ namespace NotebookWeb.Controllers
             _context = context;
         }
 
+        ///Obtener todas la notas
         // GET: api/Notes
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<NBNotes>>> GetNBNotes()
+        public async Task<IEnumerable<NoteViewModel>> getNotes()
         {
-            return await _context.NBNotes.ToListAsync();
+            var nbNotes = await _context.NBNotes.ToListAsync();
+
+            return nbNotes.Select(x => new NoteViewModel
+            {
+                IdNote = x.IdNote,
+                Title = x.Title,
+                Body = x.Body,
+                Created = x.Created,
+                Updated = x.Updated
+            });
         }
 
+        ///Obtener una notas
         // GET: api/Notes/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<NBNotes>> GetNBNotes(int id)
+        public async Task<IActionResult> getNote([FromRoute] int id)
         {
-            var nBNotes = await _context.NBNotes.FindAsync(id);
 
-            if (nBNotes == null)
-            {
+            var nbNote = await _context.NBNotes.FirstOrDefaultAsync(x => x.IdNote == id);
+
+            if (nbNote == null)
                 return NotFound();
-            }
 
-            return nBNotes;
+            return Ok(new NoteViewModel {
+                IdNote = nbNote.IdNote,
+                Title = nbNote.Title,
+                Body = nbNote.Body,
+                Created = nbNote.Created,
+                Updated = nbNote.Updated
+            });
         }
 
-        // PUT: api/Notes/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to, for
-        // more details, see https://go.microsoft.com/fwlink/?linkid=2123754.
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutNBNotes(int id, NBNotes nBNotes)
+        //Actulizar una nota
+        // PUT: api/Notes
+        [HttpPut]
+        public async Task<IActionResult> putNotes([FromBody] NoteViewModel note)
         {
-            if (id != nBNotes.IdUser)
-            {
-                return BadRequest();
-            }
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
 
-            _context.Entry(nBNotes).State = EntityState.Modified;
+            if (note.IdNote < 0)
+                return BadRequest();
+
+            var nbNote = await _context.NBNotes.FirstOrDefaultAsync(x => x.IdNote == note.IdNote);
+
+            if (nbNote == null)
+                return NotFound();
+
+            nbNote.Title = note.Title;
+            nbNote.Body = note.Body;
+            nbNote.Updated = DateTime.Now;
 
             try
             {
@@ -61,50 +85,69 @@ namespace NotebookWeb.Controllers
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!NBNotesExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
+                return BadRequest();
             }
 
-            return NoContent();
+            return Ok();
         }
 
+        //Crear o guardar una nota
         // POST: api/Notes
-        // To protect from overposting attacks, enable the specific properties you want to bind to, for
-        // more details, see https://go.microsoft.com/fwlink/?linkid=2123754.
         [HttpPost]
-        public async Task<ActionResult<NBNotes>> PostNBNotes(NBNotes nBNotes)
+        public async Task<IActionResult> postNotes([FromBody] NoteViewModel note)
         {
-            _context.NBNotes.Add(nBNotes);
-            await _context.SaveChangesAsync();
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
 
-            return CreatedAtAction("GetNBNotes", new { id = nBNotes.IdUser }, nBNotes);
+            int idNote = _context.NBNotes.OrderByDescending(x => x.IdNote).FirstOrDefault()?.IdNote + 1 ?? 1;
+
+            NBNotes nbNote = new NBNotes {
+                IdNote = idNote,
+                Title = note.Title,
+                Body = note.Body,
+                Created = DateTime.Now,
+                Updated = DateTime.Now
+            };
+            try
+            {
+                _context.NBNotes.Add(nbNote);
+                await _context.SaveChangesAsync();
+
+            }
+            catch (Exception)
+            {
+                return BadRequest(ModelState);
+            }
+
+            return Ok();
         }
 
         // DELETE: api/Notes/5
-        [HttpDelete("{id}")]
-        public async Task<ActionResult<NBNotes>> DeleteNBNotes(int id)
-        {
-            var nBNotes = await _context.NBNotes.FindAsync(id);
-            if (nBNotes == null)
-            {
-                return NotFound();
-            }
+        //[HttpDelete("{id}")]
+        //public async Task<ActionResult<NBNotes>> DeleteNotes([FromRoute] int id)
+        //{
+        //    try
+        //    {
+        //        var nBNotes = await _context.NBNotes.FindAsync(id);
+        //        if (nBNotes == null)
+        //        {
+        //            return NotFound();
+        //        }
 
-            _context.NBNotes.Remove(nBNotes);
-            await _context.SaveChangesAsync();
+        //        _context.NBNotes.Remove(nBNotes);
+        //        await _context.SaveChangesAsync();
 
-            return nBNotes;
-        }
+        //        return Ok();
+        //    }
+        //    catch (Exception)
+        //    {
+        //        return BadRequest();
+        //    }
+        //}
 
         private bool NBNotesExists(int id)
         {
-            return _context.NBNotes.Any(e => e.IdUser == id);
+            return _context.NBNotes.Any(e => e.IdNote == id);
         }
     }
 }
