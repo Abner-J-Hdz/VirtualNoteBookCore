@@ -27,7 +27,7 @@ namespace NotebookWeb.Controllers
         [HttpGet]
         public async Task<IEnumerable<NoteViewModel>> getNotes()
         {
-            var nbNotes = await _context.NBNotes.ToListAsync();
+            var nbNotes = await _context.NBNotes.OrderByDescending(x => x.Updated).ToListAsync();
 
             return nbNotes.Select(x => new NoteViewModel
             {
