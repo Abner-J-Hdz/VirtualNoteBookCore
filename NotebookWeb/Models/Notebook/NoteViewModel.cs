@@ -20,7 +20,10 @@ namespace NotebookWeb.Models.Notebook
 
         public DateTime Created { get; set; }
 
+        public string DateCreated { get; set; }
+
         public DateTime Updated { get; set; }
 
+        public string DateUpdated { get; set; }
     }
 }

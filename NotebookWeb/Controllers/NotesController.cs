@@ -35,7 +35,9 @@ namespace NotebookWeb.Controllers
                 Title = x.Title,
                 Body = x.Body,
                 Created = x.Created,
-                Updated = x.Updated
+                Updated = x.Updated,
+                DateCreated = x.Created.ToString(),
+                DateUpdated = x.Updated.ToString()
             });
         }
 
@@ -55,7 +57,9 @@ namespace NotebookWeb.Controllers
                 Title = nbNote.Title,
                 Body = nbNote.Body,
                 Created = nbNote.Created,
-                Updated = nbNote.Updated
+                Updated = nbNote.Updated,
+                DateCreated = nbNote.Created.ToString(),
+                DateUpdated = nbNote.Updated.ToString()
             });
         }
 
